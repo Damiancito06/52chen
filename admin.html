@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>52chen Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+  background:#111;
+  color:white;
+  font-family:Arial;
+  max-width:800px;
+  margin:auto;
+  padding:20px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  background:#1b1b1b;
+  color:white;
+  border:none;
+  border-radius:10px;
+}
+
+button{
+  padding:10px 20px;
+  background:red;
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.post{
+  background:#1b1b1b;
+  padding:15px;
+  border-radius:10px;
+  margin-top:20px;
+}
+
+.post img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>52chen Admin Panel</h1>
+
+<input
+  type="password"
+  id="passwordInput"
+  placeholder="Admin password"
+>
+
+<button onclick="login()">
+Login
+</button>
+
+<div id="adminPanel"></div>
+
+<script>
+
+const ADMIN_PASSWORD = "1234";
+
+const supabaseUrl = "https://ivivvvbugwbtygqygwku.supabase.co";
+
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aXZ2dmJ1Z3didHlncXlnd2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ4NjcsImV4cCI6MjA5NDI3MDg2N30.wJJutYE6zS4sZ34XhTXWpyCGwmCVIWLtOatHVJr_gBo";
+
+const supabaseClient =
+  supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+  );
+
+function login(){
+
+  const password =
+    document.getElementById("passwordInput").value;
+
+  if(password !== ADMIN_PASSWORD){
+
+    alert("Wrong password");
+
+    return;
+
+  }
+
+  loadPosts();
+
+}
+
+async function loadPosts(){
+
+  const { data } =
+    await supabaseClient
+      .from("posts")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+  const panel =
+    document.getElementById("adminPanel");
+
+  panel.innerHTML = "";
+
+  data.forEach(post => {
+
+    panel.innerHTML += `
+
+      <div class="post">
+
+        <div>
+          <b>#${post.id}</b>
+        </div>
+
+        <div>
+          ${post.alias}
+        </div>
+
+        <div>
+          ${post.content}
+        </div>
+
+        ${
+          post.image_url
+          ?
+          `<img src="${post.image_url}">`
+          :
+          ""
+        }
+
+        <button
+          onclick="deletePost(${post.id})"
+        >
+          Delete
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+async function deletePost(id){
+
+  await supabaseClient
+    .from("posts")
+    .delete()
+    .eq("id", id);
+
+  loadPosts();
+
+}
+
+</script>
+
+</body>
+</html>
