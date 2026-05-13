@@ -2,48 +2,112 @@
 <html>
 <head>
   <title>52chen</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-      padding-top: 50px;
+    body{
+      background:#111;
+      color:white;
+      font-family:Arial;
+      max-width:700px;
+      margin:auto;
+      padding:20px;
     }
 
-    img {
-      width: 300px;
+    h1{
+      text-align:center;
     }
 
-    .box {
-      background: #1b1b1b;
-      width: 500px;
-      margin: auto;
-      padding: 20px;
-      border-radius: 10px;
+    textarea{
+      width:100%;
+      height:100px;
+      background:#1b1b1b;
+      color:white;
+      border:none;
+      padding:10px;
+      border-radius:10px;
     }
 
-    a {
-      color: #7c5cff;
-      text-decoration: none;
-      font-size: 20px;
+    button{
+      margin-top:10px;
+      padding:10px 20px;
+      background:#6c4cff;
+      color:white;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .post{
+      background:#1b1b1b;
+      margin-top:20px;
+      padding:15px;
+      border-radius:10px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="box">
-  <img src="logo.png">
+<h1>52chen</h1>
 
-  <h1>Welcome to 52chen</h1>
+<textarea id="postInput" placeholder="Write something anonymous..."></textarea>
 
-  <p>Anonymous discussion board.</p>
+<br>
 
-  <br>
+<button onclick="createPost()">Post</button>
 
-  <a href="#">Enter Board</a>
-</div>
+<div id="posts"></div>
+
+<script>
+
+const supabaseUrl = "https://ivivvvbugwbtygqygwku.supabase.co/rest/v1/";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aXZ2dmJ1Z3didHlncXlnd2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ4NjcsImV4cCI6MjA5NDI3MDg2N30.wJJutYE6zS4sZ34XhTXWpyCGwmCVIWLtOatHVJr_gBo";
+
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+async function createPost(){
+
+  const content = document.getElementById("postInput").value;
+
+  if(content === "") return;
+
+  await supabase
+    .from("posts")
+    .insert([
+      { content: content }
+    ]);
+
+  document.getElementById("postInput").value = "";
+
+  loadPosts();
+}
+
+async function loadPosts(){
+
+  const { data } = await supabase
+    .from("posts")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  const postsDiv = document.getElementById("posts");
+
+  postsDiv.innerHTML = "";
+
+  data.forEach(post => {
+
+    postsDiv.innerHTML += `
+      <div class="post">
+        ${post.content}
+      </div>
+    `;
+  });
+}
+
+loadPosts();
+
+</script>
 
 </body>
 </html>
