@@ -94,14 +94,17 @@ async function createPost(){
 
 async function loadPosts(){
 
-  const { data } =
+  const { data, error } =
     await supabaseClient
     .from("posts")
     .select("*")
     .order("created_at", {
       ascending:false
     });
-
+  
+console.log(data);
+console.log(error);
+  
   const postsDiv =
     document.getElementById("posts");
 
