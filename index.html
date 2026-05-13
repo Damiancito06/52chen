@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+
+  <meta charset="UTF-8">
+
   <title>52chen</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
 
@@ -17,14 +20,21 @@
       padding:20px;
     }
 
+    h1{
+      text-align:center;
+      font-size:40px;
+    }
+
     textarea{
       width:100%;
       height:100px;
       background:#1b1b1b;
       color:white;
       border:none;
-      padding:10px;
       border-radius:10px;
+      padding:10px;
+      resize:none;
+      font-size:16px;
     }
 
     button{
@@ -35,6 +45,7 @@
       border:none;
       border-radius:10px;
       cursor:pointer;
+      font-size:16px;
     }
 
     .post{
@@ -42,6 +53,7 @@
       padding:15px;
       border-radius:10px;
       margin-top:20px;
+      word-wrap:break-word;
     }
 
   </style>
@@ -52,7 +64,10 @@
 
 <h1>52chen</h1>
 
-<textarea id="postInput"></textarea>
+<textarea
+  id="postInput"
+  placeholder="Write something anonymous..."
+></textarea>
 
 <br>
 
@@ -65,46 +80,63 @@ Post
 <script>
 
 const supabaseUrl = "https://ivivvvbugwbtygqygwku.supabase.co";
+
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aXZ2dmJ1Z3didHlncXlnd2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ4NjcsImV4cCI6MjA5NDI3MDg2N30.wJJutYE6zS4sZ34XhTXWpyCGwmCVIWLtOatHVJr_gBo";
 
-const supabaseClient = window.supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-);
+const supabaseClient =
+  supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+  );
 
 async function createPost(){
 
+  const input =
+    document.getElementById("postInput");
+
   const content =
-    document.getElementById("postInput").value;
+    input.value;
 
-  if(content === "") return;
+  if(content.trim() === ""){
+    return;
+  }
 
-  await supabaseClient
-    .from("posts")
-    .insert([
-      {
-        content: content
-      }
-    ]);
+  const { error } =
+    await supabaseClient
+      .from("posts")
+      .insert([
+        {
+          content: content
+        }
+      ]);
 
-  document.getElementById("postInput").value = "";
+  if(error){
+    console.log(error);
+    return;
+  }
 
- 
+  input.value = "";
+
 }
 
 async function loadPosts(){
 
   const { data, error } =
     await supabaseClient
-    .from("posts")
-    .select("*")
-    .order("created_at", {
-      ascending:false
-    });
-  
-console.log(data);
-console.log(error);
-  
+      .from("posts")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+  if(error){
+    console.log(error);
+    return;
+  }
+
   const postsDiv =
     document.getElementById("posts");
 
@@ -125,18 +157,21 @@ console.log(error);
 loadPosts();
 
 supabaseClient
-  .channel('posts-channel')
+
+  .channel("posts-channel")
 
   .on(
-    'postgres_changes',
+    "postgres_changes",
     {
-      event: '*',
-      schema: 'public',
-      table: 'posts'
+      event: "*",
+      schema: "public",
+      table: "posts"
     },
 
     payload => {
+
       loadPosts();
+
     }
 
   )
@@ -147,3 +182,4 @@ supabaseClient
 
 </body>
 </html>
+
