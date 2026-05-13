@@ -1,2 +1,0 @@
-# 52chen
-Anonymous imageboard
