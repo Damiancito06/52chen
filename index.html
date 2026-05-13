@@ -25,7 +25,7 @@ h1{
   font-size:40px;
 }
 
-input{
+input, textarea{
   width:100%;
   padding:10px;
   background:#1b1b1b;
@@ -36,26 +36,18 @@ input{
 }
 
 textarea{
-  width:100%;
   height:100px;
-  background:#1b1b1b;
-  color:white;
-  border:none;
-  border-radius:10px;
-  padding:10px;
   resize:none;
-  font-size:16px;
 }
 
 button{
-  margin-top:10px;
   padding:10px 20px;
   background:#6c4cff;
   color:white;
   border:none;
   border-radius:10px;
   cursor:pointer;
-  font-size:16px;
+  margin-top:10px;
 }
 
 .post{
@@ -69,6 +61,12 @@ button{
   color:#8f7cff;
   font-weight:bold;
   margin-bottom:10px;
+}
+
+.post img{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
 }
 
 </style>
@@ -89,7 +87,10 @@ button{
   placeholder="Write something anonymous..."
 ></textarea>
 
-<br>
+<input
+  type="file"
+  id="imageInput"
+>
 
 <button onclick="createPost()">
 Post
@@ -117,8 +118,31 @@ async function createPost(){
   const content =
     document.getElementById("postInput").value;
 
-  if(content.trim() === ""){
-    return;
+  const imageFile =
+    document.getElementById("imageInput").files[0];
+
+  let imageUrl = null;
+
+  if(imageFile){
+
+    const fileName =
+      Date.now() + "-" + imageFile.name;
+
+    const { error: uploadError } =
+      await supabaseClient.storage
+        .from("images")
+        .upload(fileName, imageFile);
+
+    if(uploadError){
+      console.log(uploadError);
+      return;
+    }
+
+    imageUrl =
+      supabaseUrl +
+      "/storage/v1/object/public/images/" +
+      fileName;
+
   }
 
   const finalAlias =
@@ -132,7 +156,8 @@ async function createPost(){
       .insert([
         {
           alias: finalAlias,
-          content: content
+          content: content,
+          image_url: imageUrl
         }
       ]);
 
@@ -142,6 +167,8 @@ async function createPost(){
   }
 
   document.getElementById("postInput").value = "";
+
+  document.getElementById("imageInput").value = "";
 
 }
 
@@ -180,6 +207,14 @@ async function loadPosts(){
         <div>
           ${post.content}
         </div>
+
+        ${
+          post.image_url
+          ?
+          `<img src="${post.image_url}">`
+          :
+          ""
+        }
 
       </div>
     `;
