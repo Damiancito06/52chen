@@ -226,9 +226,19 @@ async function loadPosts(){
 
       <div class="post">
 
-        <div class="alias">
-          #${post.id} - ${post.alias}
-        </div>
+        <div
+  class="alias"
+  style="
+    color:
+    ${
+      post.alias === "ADMIN"
+      ? "#ff4d4d"
+      : "#8f7cff"
+    };
+  "
+>
+  #${post.id} - ${post.alias}
+</div>
 
         ${
           post.reply_to
