@@ -3,66 +3,86 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <title>52chen</title>
+<title>52chen</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
+<style>
 
-    body{
-      background:#111;
-      color:white;
-      font-family:Arial;
-      max-width:700px;
-      margin:auto;
-      padding:20px;
-    }
+body{
+  background:#111;
+  color:white;
+  font-family:Arial;
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
 
-    h1{
-      text-align:center;
-      font-size:40px;
-    }
+h1{
+  text-align:center;
+  font-size:40px;
+}
 
-    textarea{
-      width:100%;
-      height:100px;
-      background:#1b1b1b;
-      color:white;
-      border:none;
-      border-radius:10px;
-      padding:10px;
-      resize:none;
-      font-size:16px;
-    }
+input{
+  width:100%;
+  padding:10px;
+  background:#1b1b1b;
+  color:white;
+  border:none;
+  border-radius:10px;
+  margin-bottom:10px;
+}
 
-    button{
-      margin-top:10px;
-      padding:10px 20px;
-      background:#6c4cff;
-      color:white;
-      border:none;
-      border-radius:10px;
-      cursor:pointer;
-      font-size:16px;
-    }
+textarea{
+  width:100%;
+  height:100px;
+  background:#1b1b1b;
+  color:white;
+  border:none;
+  border-radius:10px;
+  padding:10px;
+  resize:none;
+  font-size:16px;
+}
 
-    .post{
-      background:#1b1b1b;
-      padding:15px;
-      border-radius:10px;
-      margin-top:20px;
-      word-wrap:break-word;
-    }
+button{
+  margin-top:10px;
+  padding:10px 20px;
+  background:#6c4cff;
+  color:white;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:16px;
+}
 
-  </style>
+.post{
+  background:#1b1b1b;
+  padding:15px;
+  border-radius:10px;
+  margin-top:20px;
+}
+
+.alias{
+  color:#8f7cff;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+</style>
 
 </head>
 
 <body>
 
 <h1>52chen</h1>
+
+<input
+  id="aliasInput"
+  placeholder="Alias (optional)"
+>
 
 <textarea
   id="postInput"
@@ -79,9 +99,9 @@ Post
 
 <script>
 
-const supabaseUrl = "https://ivivvvbugwbtygqygwku.supabase.co";
+const supabaseUrl = "TU_URL";
 
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aXZ2dmJ1Z3didHlncXlnd2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ4NjcsImV4cCI6MjA5NDI3MDg2N30.wJJutYE6zS4sZ34XhTXWpyCGwmCVIWLtOatHVJr_gBo";
+const supabaseKey = "TU_KEY";
 
 const supabaseClient =
   supabase.createClient(
@@ -91,21 +111,27 @@ const supabaseClient =
 
 async function createPost(){
 
-  const input =
-    document.getElementById("postInput");
+  const alias =
+    document.getElementById("aliasInput").value;
 
   const content =
-    input.value;
+    document.getElementById("postInput").value;
 
   if(content.trim() === ""){
     return;
   }
+
+  const finalAlias =
+    alias.trim() === ""
+    ? "Anonymous"
+    : alias;
 
   const { error } =
     await supabaseClient
       .from("posts")
       .insert([
         {
+          alias: finalAlias,
           content: content
         }
       ]);
@@ -115,7 +141,7 @@ async function createPost(){
     return;
   }
 
-  input.value = "";
+  document.getElementById("postInput").value = "";
 
 }
 
@@ -146,7 +172,15 @@ async function loadPosts(){
 
     postsDiv.innerHTML += `
       <div class="post">
-        ${post.content}
+
+        <div class="alias">
+          ${post.alias}
+        </div>
+
+        <div>
+          ${post.content}
+        </div>
+
       </div>
     `;
 
@@ -158,28 +192,27 @@ loadPosts();
 
 supabaseClient
 
-  .channel("posts-channel")
+.channel("realtime posts")
 
-  .on(
-    "postgres_changes",
-    {
-      event: "*",
-      schema: "public",
-      table: "posts"
-    },
+.on(
+  "postgres_changes",
+  {
+    event:"*",
+    schema:"public",
+    table:"posts"
+  },
 
-    payload => {
+  payload => {
 
-      loadPosts();
+    loadPosts();
 
-    }
+  }
 
-  )
+)
 
-  .subscribe();
+.subscribe();
 
 </script>
 
 </body>
 </html>
-
