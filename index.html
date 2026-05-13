@@ -162,10 +162,17 @@ async function createPost(){
 
   }
 
-  const finalAlias =
-    alias.trim() === ""
-    ? "Anonymous"
-    : alias;
+  let finalAlias =
+  alias.trim() === ""
+  ? "Anonymous"
+  : alias;
+
+if(
+  finalAlias.toLowerCase() === "admin"
+){
+  alert("This alias is reserved.");
+  return;
+}
 
   const { error } =
     await supabaseClient
