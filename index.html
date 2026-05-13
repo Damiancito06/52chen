@@ -89,7 +89,7 @@ async function createPost(){
 
   document.getElementById("postInput").value = "";
 
-  loadPosts();
+ 
 }
 
 async function loadPosts(){
@@ -123,6 +123,25 @@ console.log(error);
 }
 
 loadPosts();
+
+supabaseClient
+  .channel('posts-channel')
+
+  .on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'posts'
+    },
+
+    payload => {
+      loadPosts();
+    }
+
+  )
+
+  .subscribe();
 
 </script>
 
