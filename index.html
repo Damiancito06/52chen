@@ -60,6 +60,10 @@ button{
 .alias{
   color:#8f7cff;
   font-weight:bold;
+}
+
+.reply{
+  color:#5ea1ff;
   margin-bottom:10px;
 }
 
@@ -67,6 +71,11 @@ button{
   width:100%;
   border-radius:10px;
   margin-top:10px;
+}
+
+.replyBtn{
+  margin-top:10px;
+  background:#222;
 }
 
 </style>
@@ -90,6 +99,11 @@ button{
 <input
   type="file"
   id="imageInput"
+>
+
+<input
+  id="replyInput"
+  placeholder="Reply to post ID (optional)"
 >
 
 <button onclick="createPost()">
@@ -118,6 +132,9 @@ async function createPost(){
   const content =
     document.getElementById("postInput").value;
 
+  const replyTo =
+    document.getElementById("replyInput").value;
+
   const imageFile =
     document.getElementById("imageInput").files[0];
 
@@ -130,7 +147,7 @@ async function createPost(){
 
     const { error: uploadError } =
       await supabaseClient.storage
-        .from("images")
+        .from("IMAGES")
         .upload(fileName, imageFile);
 
     if(uploadError){
@@ -140,7 +157,7 @@ async function createPost(){
 
     imageUrl =
       supabaseUrl +
-      "/storage/v1/object/public/images/" +
+      "/storage/v1/object/public/IMAGES/" +
       fileName;
 
   }
@@ -157,7 +174,8 @@ async function createPost(){
         {
           alias: finalAlias,
           content: content,
-          image_url: imageUrl
+          image_url: imageUrl,
+          reply_to: replyTo || null
         }
       ]);
 
@@ -167,8 +185,8 @@ async function createPost(){
   }
 
   document.getElementById("postInput").value = "";
-
   document.getElementById("imageInput").value = "";
+  document.getElementById("replyInput").value = "";
 
 }
 
@@ -198,11 +216,22 @@ async function loadPosts(){
   data.forEach(post => {
 
     postsDiv.innerHTML += `
+
       <div class="post">
 
         <div class="alias">
-          ${post.alias}
+          #${post.id} - ${post.alias}
         </div>
+
+        ${
+          post.reply_to
+          ?
+          `<div class="reply">
+            Replying to #${post.reply_to}
+          </div>`
+          :
+          ""
+        }
 
         <div>
           ${post.content}
@@ -216,9 +245,28 @@ async function loadPosts(){
           ""
         }
 
+        <button
+          class="replyBtn"
+          onclick="replyToPost(${post.id})"
+        >
+          Reply
+        </button>
+
       </div>
+
     `;
 
+  });
+
+}
+
+function replyToPost(id){
+
+  document.getElementById("replyInput").value = id;
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
   });
 
 }
@@ -251,3 +299,6 @@ supabaseClient
 
 </body>
 </html>
+
+
+
