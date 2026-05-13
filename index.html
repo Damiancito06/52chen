@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>52chen</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <style>
+
     body{
       background:#111;
       color:white;
@@ -13,10 +15,6 @@
       max-width:700px;
       margin:auto;
       padding:20px;
-    }
-
-    h1{
-      text-align:center;
     }
 
     textarea{
@@ -41,22 +39,26 @@
 
     .post{
       background:#1b1b1b;
-      margin-top:20px;
       padding:15px;
       border-radius:10px;
+      margin-top:20px;
     }
+
   </style>
+
 </head>
 
 <body>
 
 <h1>52chen</h1>
 
-<textarea id="postInput" placeholder="Write something anonymous..."></textarea>
+<textarea id="postInput"></textarea>
 
 <br>
 
-<button onclick="createPost()">Post</button>
+<button onclick="createPost()">
+Post
+</button>
 
 <div id="posts"></div>
 
@@ -65,18 +67,24 @@
 const supabaseUrl = "https://ivivvvbugwbtygqygwku.supabase.co/rest/v1/";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aXZ2dmJ1Z3didHlncXlnd2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTQ4NjcsImV4cCI6MjA5NDI3MDg2N30.wJJutYE6zS4sZ34XhTXWpyCGwmCVIWLtOatHVJr_gBo";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
 
 async function createPost(){
 
-  const content = document.getElementById("postInput").value;
+  const content =
+    document.getElementById("postInput").value;
 
   if(content === "") return;
 
-  await supabase
+  await supabaseClient
     .from("posts")
     .insert([
-      { content: content }
+      {
+        content: content
+      }
     ]);
 
   document.getElementById("postInput").value = "";
@@ -86,12 +94,16 @@ async function createPost(){
 
 async function loadPosts(){
 
-  const { data } = await supabase
+  const { data } =
+    await supabaseClient
     .from("posts")
     .select("*")
-    .order("created_at", { ascending:false });
+    .order("created_at", {
+      ascending:false
+    });
 
-  const postsDiv = document.getElementById("posts");
+  const postsDiv =
+    document.getElementById("posts");
 
   postsDiv.innerHTML = "";
 
@@ -102,7 +114,9 @@ async function loadPosts(){
         ${post.content}
       </div>
     `;
+
   });
+
 }
 
 loadPosts();
